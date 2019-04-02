@@ -1,3 +1,6 @@
+#! /usr/bin/env python3
+#coding=utf-8
+
 from socket import *
 import sys
 from threading import Thread
@@ -20,7 +23,7 @@ def connect_frame(**env):
             break
     # 将请求发送给webframe
     s.send(json.dumps(env).encode())
-    data = s.recv(4096*20).decode()
+    data = s.recv(4096*500).decode()
     return data
     
 
@@ -31,6 +34,7 @@ class HTTPServer(object):
         self.create_socket()
         self.bind()
     
+    # 创建tcp套接字
     def create_socket(self):
         self.sockfd = socket()
         self.sockfd.setsockopt(SOL_SOCKET,SO_REUSEADDR,DEBUG)
@@ -40,6 +44,7 @@ class HTTPServer(object):
         self.port = self.address[1]
         self.sockfd.bind(self.address)
 
+    # 启动函数
     def serve_forever(self):
         self.sockfd.listen(5)
         print('Listen the port %d ...'%self.port)
@@ -56,6 +61,8 @@ class HTTPServer(object):
             client = Thread(target = self.handle,args = (connfd,))
             client.setDaemon(True)
             client.start()
+    
+    # 处理函数
     def handle(self,connfd):
         request = connfd.recv(4096)
         if not request:
@@ -78,6 +85,7 @@ class HTTPServer(object):
     def response(self,connfd,data):
         # data ==>'{'status':'200','content':'xxxx'}'
         data = json.loads(data)
+        print(data)
         status = data['status'] #  响应码
         content = data['content']  #　数据内容
         if status == '200':
